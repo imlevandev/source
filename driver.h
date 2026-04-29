@@ -39,6 +39,23 @@ public:
     uint32_t process_id = 0;
     uintptr_t process_base = 0;
 
+    static bool IsValidUserAddress(uintptr_t address, size_t size = 1) {
+        constexpr uintptr_t min_user_address = 0x10000;
+        constexpr uintptr_t max_user_address = 0x00007FFFFFFFFFFF;
+
+        if (address < min_user_address || address > max_user_address)
+            return false;
+
+        if (size == 0)
+            return false;
+
+        const uintptr_t end = address + size - 1;
+        if (end < address || end > max_user_address)
+            return false;
+
+        return true;
+    }
+
     static bool Init() {
         driver_handle = CreateFileW(L"\\\\.\\WinDrvMgr", GENERIC_READ | GENERIC_WRITE,
             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -77,8 +94,12 @@ public:
         return buffer;
     }
 
-    void ReadRaw(uintptr_t address, void* buffer, size_t size) {
-        if (driver_handle == INVALID_HANDLE_VALUE) return;
+    bool ReadRaw(uintptr_t address, void* buffer, size_t size) {
+        if (driver_handle == INVALID_HANDLE_VALUE || buffer == nullptr)
+            return false;
+
+        if (!IsValidUserAddress(address, size))
+            return false;
 
         read_mem args;
         args.ProcessId = process_id;
@@ -86,11 +107,16 @@ public:
         args.Buffer = (ULONGLONG)buffer;
         args.Size = size;
 
-        DeviceIoControl(driver_handle, Read_code, &args, sizeof(args), &args, sizeof(args), NULL, NULL);
+        DWORD bytes_returned = 0;
+        return DeviceIoControl(driver_handle, Read_code, &args, sizeof(args), &args, sizeof(args), &bytes_returned, NULL) != FALSE;
     }
 
-    void WriteRaw(uintptr_t address, void* buffer, size_t size) {
-        if (driver_handle == INVALID_HANDLE_VALUE) return;
+    bool WriteRaw(uintptr_t address, void* buffer, size_t size) {
+        if (driver_handle == INVALID_HANDLE_VALUE || buffer == nullptr)
+            return false;
+
+        if (!IsValidUserAddress(address, size))
+            return false;
 
         read_mem args;
         args.ProcessId = process_id;
@@ -98,7 +124,8 @@ public:
         args.Buffer = (ULONGLONG)buffer;
         args.Size = size;
 
-        DeviceIoControl(driver_handle, Write_code, &args, sizeof(args), &args, sizeof(args), NULL, NULL);
+        DWORD bytes_returned = 0;
+        return DeviceIoControl(driver_handle, Write_code, &args, sizeof(args), &args, sizeof(args), &bytes_returned, NULL) != FALSE;
     }
 
     bool MouseMove(long x, long y) {

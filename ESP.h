@@ -85,72 +85,139 @@ inline PVOID BaseThread2()
 {
 	while (true)
 	{
-		if (esp)
+		if (!esp)
 		{
-			std::vector<EntityList> tmpList;
-
-			uWorld = DBD->rpm<uintptr_t>(process_base + offsets::GWorld);
-			gameInstance = DBD->rpm<uintptr_t>(uWorld + offsets::OwningGameInstance);
-			persistentLevel = DBD->rpm<uintptr_t>(uWorld + offsets::PersistentLevel);
-			localPlayerPtr = DBD->rpm<uintptr_t>(gameInstance + offsets::LocalPlayers);
-			localPlayer = DBD->rpm<uintptr_t>(localPlayerPtr);
-			playerController = DBD->rpm<uintptr_t>(localPlayer + offsets::PlayerController);
-			PlayerStateLocalPlayer = DBD->rpm<uintptr_t>(playerController + offsets::PlayerStateLocalPlayer);
-			Localpawn = DBD->rpm<uintptr_t>(playerController + offsets::AcknowledgedPawn);
-			cameraManager = DBD->rpm<uintptr_t>(playerController + offsets::PlayerCameraManager);
-			cameraCache = DBD->rpm<FCameraCacheEntry>(cameraManager + offsets::CameraCachePrivate);
-			actorsArray = DBD->rpm<uintptr_t>(persistentLevel + offsets::ActorArray);
-			actorsCount = DBD->rpm<int>(persistentLevel + offsets::ActorCount);
-
-			for (int i = 0; i < actorsCount; i++)
-			{
-				UPlayer player;
-				uintptr_t actor = DBD->rpm<uintptr_t>(actorsArray + i * 0x8);
-				if (!actor)
-					continue;
-				player.instance = actor;
-				player.objectId = DBD->rpm<int>(actor + offsets::ActorID);
-
-				if (GetNameById(player.objectId).find("BP_CamperMale") != std::string::npos || GetNameById(player.objectId).find("BP_CamperFemale") != std::string::npos || GetNameById(player.objectId).find("BP_Slasher") != std::string::npos)
-				{
-					player.PlayerState = DBD->rpm<uintptr_t>(actor + offsets::PlayerState);
-					player.Pawn = DBD->rpm<uintptr_t>(actor + offsets::AcknowledgedPawn);
-					player.root_component = DBD->rpm<uintptr_t>(player.instance + offsets::RootComponent);
-					player.origin = DBD->rpm<Vector3>(player.root_component + offsets::RelativeLocation);
-					player.TopLocation = Vector3{ player.origin.x, player.origin.y, player.origin.z + 125 };
-					float DistM = ToMeters(cameraCache.POV.Location.DistTo(player.origin)) - 6;
-
-					if (DistM > distanceMax || player.PlayerState == PlayerStateLocalPlayer)
-						continue;
-
-					if (GetNameById(player.objectId).find("BP_CamperMale") != std::string::npos)
-						nameS = "MaleSurvivor";
-
-					if (GetNameById(player.objectId).find("BP_CamperFemale") != std::string::npos)
-						nameS = "FemaleSurvivor";
-
-					if (GetNameById(player.objectId).find("BP_Slasher") != std::string::npos)
-						nameS = "Killer";
-
-					EntityList Entity{ };
-					Entity.instance = player.instance;
-					Entity.objectId = player.objectId;
-					Entity.PlayerState = player.PlayerState;
-					Entity.health = player.health;
-					Entity.root_component = player.root_component;
-					Entity.origin = player.origin;
-					Entity.TopLocation = player.TopLocation;
-					Entity.dist = DistM;
-					Entity.name = nameS;
-					tmpList.push_back(Entity);
-
-				}
-				else
-					continue;
-			}
-			entityList = tmpList;
-			Sleep(0);
+			Sleep(10);
+			continue;
 		}
+
+		auto clearEntities = []() {
+			std::lock_guard<std::mutex> lock(entityListMutex);
+			entityList.clear();
+		};
+
+		if (!DBD || process_base == 0)
+		{
+			clearEntities();
+			Sleep(50);
+			continue;
+		}
+
+		auto readPtr = [](uintptr_t address) -> uintptr_t {
+			if (!DRV::IsValidUserAddress(address, sizeof(uintptr_t)))
+				return 0;
+			return DBD->rpm<uintptr_t>(address);
+		};
+
+		std::vector<EntityList> tmpList;
+
+		uWorld = readPtr(process_base + offsets::GWorld);
+		if (!DRV::IsValidUserAddress(uWorld))
+		{
+			clearEntities();
+			Sleep(50);
+			continue;
+		}
+
+		gameInstance = readPtr(uWorld + offsets::OwningGameInstance);
+		persistentLevel = readPtr(uWorld + offsets::PersistentLevel);
+		if (!DRV::IsValidUserAddress(gameInstance) || !DRV::IsValidUserAddress(persistentLevel))
+		{
+			clearEntities();
+			Sleep(50);
+			continue;
+		}
+
+		localPlayerPtr = readPtr(gameInstance + offsets::LocalPlayers);
+		localPlayer = readPtr(localPlayerPtr);
+		playerController = readPtr(localPlayer + offsets::PlayerController);
+		if (!DRV::IsValidUserAddress(playerController))
+		{
+			clearEntities();
+			Sleep(50);
+			continue;
+		}
+
+		PlayerStateLocalPlayer = readPtr(playerController + offsets::PlayerStateLocalPlayer);
+		Localpawn = readPtr(playerController + offsets::AcknowledgedPawn);
+		cameraManager = readPtr(playerController + offsets::PlayerCameraManager);
+		if (!DRV::IsValidUserAddress(cameraManager))
+		{
+			clearEntities();
+			Sleep(50);
+			continue;
+		}
+
+		FCameraCacheEntry currentCameraCache = DBD->rpm<FCameraCacheEntry>(cameraManager + offsets::CameraCachePrivate);
+		actorsArray = readPtr(persistentLevel + offsets::ActorArray);
+		actorsCount = DBD->rpm<int>(persistentLevel + offsets::ActorArray + offsets::ActorCount);
+		if (!DRV::IsValidUserAddress(actorsArray) || actorsCount <= 0 || actorsCount > 20000)
+		{
+			clearEntities();
+			Sleep(50);
+			continue;
+		}
+
+		for (int i = 0; i < actorsCount; i++)
+		{
+			const uintptr_t actorAddress = actorsArray + static_cast<uintptr_t>(i) * sizeof(uintptr_t);
+			if (!DRV::IsValidUserAddress(actorAddress, sizeof(uintptr_t)))
+				break;
+
+			UPlayer player;
+			uintptr_t actor = readPtr(actorAddress);
+			if (!DRV::IsValidUserAddress(actor))
+				continue;
+
+			player.instance = actor;
+			player.objectId = DBD->rpm<int>(actor + offsets::ActorID);
+
+			const std::string actorName = GetNameById(player.objectId);
+			if (actorName.find("BP_CamperMale") != std::string::npos || actorName.find("BP_CamperFemale") != std::string::npos || actorName.find("BP_Slasher") != std::string::npos)
+			{
+				player.PlayerState = readPtr(actor + offsets::PlayerState);
+				player.Pawn = readPtr(actor + offsets::AcknowledgedPawn);
+				player.root_component = readPtr(player.instance + offsets::RootComponent);
+				if (!DRV::IsValidUserAddress(player.root_component + offsets::RelativeLocation, sizeof(Vector3)))
+					continue;
+
+				player.origin = DBD->rpm<Vector3>(player.root_component + offsets::RelativeLocation);
+				player.TopLocation = Vector3{ player.origin.x, player.origin.y, player.origin.z + 125 };
+				float DistM = ToMeters(currentCameraCache.POV.Location.DistTo(player.origin)) - 6;
+
+				if (DistM > distanceMax || player.PlayerState == PlayerStateLocalPlayer)
+					continue;
+
+				if (actorName.find("BP_CamperMale") != std::string::npos)
+					nameS = "MaleSurvivor";
+
+				if (actorName.find("BP_CamperFemale") != std::string::npos)
+					nameS = "FemaleSurvivor";
+
+				if (actorName.find("BP_Slasher") != std::string::npos)
+					nameS = "Killer";
+
+				EntityList Entity{ };
+				Entity.instance = player.instance;
+				Entity.objectId = player.objectId;
+				Entity.PlayerState = player.PlayerState;
+				Entity.health = player.health;
+				Entity.root_component = player.root_component;
+				Entity.origin = player.origin;
+				Entity.TopLocation = player.TopLocation;
+				Entity.dist = DistM;
+				Entity.name = nameS;
+				tmpList.push_back(Entity);
+			}
+		}
+
+		{
+			std::lock_guard<std::mutex> lock(entityListMutex);
+			cameraCache = currentCameraCache;
+			entityList = tmpList;
+		}
+
+		Sleep(5);
 	}
 }
 
@@ -158,13 +225,19 @@ void RenderESP()
 {
 	if (esp)
 	{
-		auto EntityList_Copy = entityList;
+		std::vector<EntityList> EntityList_Copy;
+		FCameraCacheEntry cameraCacheCopy;
+		{
+			std::lock_guard<std::mutex> lock(entityListMutex);
+			EntityList_Copy = entityList;
+			cameraCacheCopy = cameraCache;
+		}
 		for (size_t i = 0; i < EntityList_Copy.size(); i++)
 		{
 			auto Entity = EntityList_Copy[i];
-			Vector3 Screen = WorldToScreen(cameraCache.POV, Entity.origin);
-			Vector3 head = WorldToScreen(cameraCache.POV, Entity.TopLocation);
-			if (!mate & Entity.name == "MaleSurvivor" || !mate & Entity.name == "FemaleSurvivor")
+			Vector3 Screen = WorldToScreen(cameraCacheCopy.POV, Entity.origin);
+			Vector3 head = WorldToScreen(cameraCacheCopy.POV, Entity.TopLocation);
+			if ((!mate && Entity.name == "MaleSurvivor") || (!mate && Entity.name == "FemaleSurvivor"))
 				continue;
 
 			if (Screen.x && head.x)

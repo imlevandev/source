@@ -30,7 +30,7 @@ namespace offsets
 
     uintptr_t PlayerNamePrivate     = 0x390;     // PlayerState::PlayerNamePrivate
     uintptr_t ActorArray            = 0xC0;      // Off::InSDK::ULevel::Actors
-    uintptr_t ActorCount            = 0x8;       // TArray::Num
+    uintptr_t ActorCount            = 0x8;       // TArray::Num, relative to ActorArray
     uintptr_t ActorID               = 0x18;      // Off::UObject::Name
 
     // MISSING ComponentToWorld (SceneComponent::ComponentToWorld) thay offset mới vào 

@@ -2,6 +2,7 @@
 #include "global.h"
 #include "offset.h"
 #include <cmath>
+#include <mutex>
 
 struct Matrix4x4
 {
@@ -37,6 +38,7 @@ typedef struct _EntityList
 }EntityList;
 
 std::vector<EntityList> entityList;
+std::mutex entityListMutex;
 
 struct FMinimalViewInfo
 {
@@ -207,19 +209,38 @@ static Vector3 WorldToScreen(FMinimalViewInfo camera, Vector3 WorldLocation)
 
 static std::string GetNameById(uint32_t actor_id) 
 {
-	char pNameBuffer[256];
-	int TableLocation = (unsigned int)(actor_id >> 0x10);
+	if (actor_id == 0 || process_base == 0)
+		return std::string("NULL");
+
+	char pNameBuffer[256] = {};
+	uint32_t TableLocation = actor_id >> 0x10;
 	uint16_t RowLocation = (unsigned __int16)actor_id;
 	uint64_t GNameTable = process_base + offsets::GNames;
 
-	uint64_t TableLocationAddress = DBD->rpm<uint64_t>(GNameTable + 0x10 + TableLocation * 0x8) + (unsigned __int32)(4 * RowLocation);
+	const uint64_t tableAddress = GNameTable + 0x10 + static_cast<uint64_t>(TableLocation) * 0x8;
+	if (!DRV::IsValidUserAddress(tableAddress, sizeof(uint64_t)))
+		return std::string("NULL");
+
+	uint64_t tableBase = DBD->rpm<uint64_t>(tableAddress);
+	if (!DRV::IsValidUserAddress(tableBase))
+		return std::string("NULL");
+
+	uint64_t TableLocationAddress = tableBase + static_cast<uint32_t>(4 * RowLocation);
+	if (!DRV::IsValidUserAddress(TableLocationAddress + 4, sizeof(uint16_t)))
+		return std::string("NULL");
 
 	uint64_t sLength = (unsigned __int64)(DBD->rpm<uint16_t>(TableLocationAddress + 4)) >> 1;
 
-	if (sLength < 128)
+	if (sLength > 0 && sLength < sizeof(pNameBuffer))
 	{
-		DBD->ReadRaw((TableLocationAddress + 6), pNameBuffer, sLength);
-		return std::string(pNameBuffer);
+		if (!DRV::IsValidUserAddress(TableLocationAddress + 6, static_cast<size_t>(sLength)))
+			return std::string("NULL");
+
+		if (DBD->ReadRaw((TableLocationAddress + 6), pNameBuffer, static_cast<size_t>(sLength)))
+		{
+			pNameBuffer[sLength] = '\0';
+			return std::string(pNameBuffer);
+		}
 	}
 	return std::string("NULL");
 }
