@@ -1,0 +1,272 @@
+﻿  main.cpp
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(1,1): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(53,23): error C2059: syntax error: '='
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(54,104): error C2238: unexpected token(s) preceding ';'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(56,9): error C2059: syntax error: 'if'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(56,52): error C2334: unexpected token(s) preceding '{'; skipping apparent function body
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(60,19): error C2143: syntax error: missing ';' before '<<'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(60,14): error C2886: 'std::cout': symbol cannot be used in a member using-declaration
+  (compiling source file 'main.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\iostream(40,75):
+      see declaration of 'std::cout'
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(60,74): error C2238: unexpected token(s) preceding ';'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(61,9): error C2059: syntax error: 'return'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(61,20): error C2238: unexpected token(s) preceding ';'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(64,5): error C2628: 'DRV' followed by 'bool' is illegal (did you forget a ';'?)
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(65,9): error C2065: 'process_id': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(65,22): error C3861: 'GetProcessIdByName': identifier not found
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,13): error C2065: 'process_id': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(69,27): error C2065: 'process_id': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(72,35): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(74,13): error C2065: 'process_base': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37): error C2440: 'return': cannot convert from 'bool' to 'DRV'
+  (compiling source file 'main.cpp')
+      C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+      'DRV::DRV': no overloaded function could convert all the argument types
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(62,5):
+          could be 'DRV::DRV(DRV &&)'
+              C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+              'DRV::DRV(DRV &&)': cannot convert argument 1 from 'bool' to 'DRV &&'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+                  Reason: cannot convert from 'bool' to 'DRV'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+                  Conversion requires a second user-defined-conversion operator or constructor
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(62,5):
+          or       'DRV::DRV(const DRV &)'
+              C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+              'DRV::DRV(const DRV &)': cannot convert argument 1 from 'bool' to 'const DRV &'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+                  Reason: cannot convert from 'bool' to 'const DRV'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+                  Conversion requires a second user-defined-conversion operator or constructor
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(66,37):
+          while trying to match the argument list '(bool)'
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20): error C2440: 'return': cannot convert from 'bool' to 'DRV'
+  (compiling source file 'main.cpp')
+      C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+      'DRV::DRV': no overloaded function could convert all the argument types
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(62,5):
+          could be 'DRV::DRV(DRV &&)'
+              C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+              'DRV::DRV(DRV &&)': cannot convert argument 1 from 'bool' to 'DRV &&'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+                  Reason: cannot convert from 'bool' to 'DRV'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+                  Conversion requires a second user-defined-conversion operator or constructor
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(62,5):
+          or       'DRV::DRV(const DRV &)'
+              C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+              'DRV::DRV(const DRV &)': cannot convert argument 1 from 'bool' to 'const DRV &'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+                  Reason: cannot convert from 'bool' to 'const DRV'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+                  Conversion requires a second user-defined-conversion operator or constructor
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(75,20):
+          while trying to match the argument list '(bool)'
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16): error C2440: 'return': cannot convert from 'bool' to 'DRV'
+  (compiling source file 'main.cpp')
+      C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+      'DRV::DRV': no overloaded function could convert all the argument types
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(62,5):
+          could be 'DRV::DRV(DRV &&)'
+              C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+              'DRV::DRV(DRV &&)': cannot convert argument 1 from 'bool' to 'DRV &&'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+                  Reason: cannot convert from 'bool' to 'DRV'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+                  Conversion requires a second user-defined-conversion operator or constructor
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(62,5):
+          or       'DRV::DRV(const DRV &)'
+              C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+              'DRV::DRV(const DRV &)': cannot convert argument 1 from 'bool' to 'const DRV &'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+                  Reason: cannot convert from 'bool' to 'const DRV'
+                  C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+                  Conversion requires a second user-defined-conversion operator or constructor
+          C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(79,16):
+          while trying to match the argument list '(bool)'
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(83,16): error C2065: 'process_base': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(97,13): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(97,54): error C2065: 'process_id': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(101,26): error C2065: 'process_id': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(107,35): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(113,13): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(113,54): error C2065: 'process_id': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(117,26): error C2065: 'process_id': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(123,35): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(128,13): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(137,35): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(142,13): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(143,25): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(144,13): error C2065: 'driver_handle': undeclared identifier
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(148,6): error C2588: '::~DRV': illegal global destructor
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(148,6): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(150,5): warning C4508: 'DRV': function should return a value; 'void' return type assumed
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(152,1): error C2059: syntax error: 'private'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(175,1): error C2059: syntax error: '}'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(175,1): error C2143: syntax error: missing ';' before '}'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\global.h(6,4): error C2143: syntax error: missing ';' before '*'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\global.h(6,1): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\global.h(6,1): error C2373: 'DRV': redefinition; different type modifiers
+  (compiling source file 'main.cpp')
+      C:\Users\nguye\OneDrive\Máy tính\source (1)\source\driver.h(148,6):
+      see declaration of 'DRV'
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\global.h(6,6): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\global.h(6,16): error C2061: syntax error: identifier 'DRV'
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\util.h(215,39): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\util.h(217,45): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(92,18): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(93,24): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(94,27): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(95,26): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(96,23): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(97,28): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(98,34): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(99,21): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(100,25): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(101,23): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(102,23): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(103,23): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(108,28): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(112,28): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(116,32): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(117,25): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(118,35): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\ESP.h(119,27): error C2227: left of '->' must point to class/struct/union/generic type
+  (compiling source file 'main.cpp')
+  
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(122,19): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(125,25): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(128,28): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(131,27): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(134,24): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(137,29): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(140,35): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(143,22): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(146,26): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(149,24): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(152,24): error C2227: left of '->' must point to class/struct/union/generic type
+C:\Users\nguye\OneDrive\Máy tính\source (1)\source\main.cpp(155,24): error C2227: left of '->' must point to class/struct/union/generic type
