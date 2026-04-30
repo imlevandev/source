@@ -20,7 +20,7 @@ FOverlay* g_overlay;
 float ScreenCenterX;
 float ScreenCenterY;
 
-float FOV = 40;
+float FOV = 90;
 float distanceMax = 250;
 
 uint64_t process_base = 0;

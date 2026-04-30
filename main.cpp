@@ -47,18 +47,22 @@ void Update() {
             if (GetAsyncKeyState(VK_LEFT) & 1)
             {
                 if (showmenu)
-                    if (FOV < 800)
-                        FOV = FOV + 1.f;
+                    if (FOV > 40)
+                        FOV = FOV - 1.f;
             }
             if (GetAsyncKeyState(VK_RIGHT) & 1)
             {
                 if (showmenu)
-                    if (FOV > 10)
-                        FOV = FOV - 1.f;
+                    if (FOV < 170)
+                        FOV = FOV + 1.f;
             }
+
+            ApplyThirdPersonFOV();
         }
         if (GetAsyncKeyState(VK_INSERT) & 1)
             showmenu = !showmenu;
+
+        Sleep(5);
     }
 }
 

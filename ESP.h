@@ -78,6 +78,75 @@ void RenderMenu()
 
 		g_overlay->draw_text(5, 120, D2D1::ColorF(0, 255, 0, 255), "UP/Down DistanceMax = ");
 		g_overlay->draw_text(160, 120, D2D1::ColorF(0, 0, 255, 255), std::to_string(int(distanceMax)).c_str());
+
+		g_overlay->draw_text(5, 140, D2D1::ColorF(0, 255, 0, 255), "LEFT/RIGHT Camera FOV = ");
+		g_overlay->draw_text(190, 140, D2D1::ColorF(0, 0, 255, 255), std::to_string(int(FOV)).c_str());
+	}
+}
+
+static bool WriteFloat(uintptr_t address, float value)
+{
+	if (!DBD || !DRV::IsValidUserAddress(address, sizeof(float)))
+		return false;
+
+	return DBD->WriteRaw(address, &value, sizeof(value));
+}
+
+static void ApplyThirdPersonFOV()
+{
+	if (!DBD || process_base == 0)
+		return;
+
+	float targetFOV = FOV;
+	if (targetFOV < 40.0f)
+		targetFOV = 40.0f;
+	else if (targetFOV > 170.0f)
+		targetFOV = 170.0f;
+
+	auto readPtr = [](uintptr_t address) -> uintptr_t {
+		if (!DRV::IsValidUserAddress(address, sizeof(uintptr_t)))
+			return 0;
+		return DBD->rpm<uintptr_t>(address);
+	};
+
+	const uintptr_t currentWorld = readPtr(process_base + offsets::GWorld);
+	if (!DRV::IsValidUserAddress(currentWorld))
+		return;
+
+	const uintptr_t currentGameInstance = readPtr(currentWorld + offsets::OwningGameInstance);
+	if (!DRV::IsValidUserAddress(currentGameInstance))
+		return;
+
+	const uintptr_t currentLocalPlayerPtr = readPtr(currentGameInstance + offsets::LocalPlayers);
+	const uintptr_t currentLocalPlayer = readPtr(currentLocalPlayerPtr);
+	const uintptr_t currentPlayerController = readPtr(currentLocalPlayer + offsets::PlayerController);
+	if (!DRV::IsValidUserAddress(currentPlayerController))
+		return;
+
+	const uintptr_t currentPawn = readPtr(currentPlayerController + offsets::AcknowledgedPawn);
+	const uintptr_t currentCameraManager = readPtr(currentPlayerController + offsets::PlayerCameraManager);
+
+	if (DRV::IsValidUserAddress(currentCameraManager))
+	{
+		WriteFloat(currentCameraManager + offsets::APlayerCameraManager_DefaultFOVOffset, targetFOV);
+
+		const uintptr_t cachePOV = currentCameraManager
+			+ offsets::APlayerCameraManager_CameraCachePrivateOffset
+			+ offsets::FCameraCacheEntry_POVOffset;
+		WriteFloat(cachePOV + offsets::FMinimalViewInfo_FOVOffset, targetFOV);
+		WriteFloat(cachePOV + offsets::FMinimalViewInfo_DesiredFOVOffset, targetFOV);
+
+		const uintptr_t viewTargetPOV = currentCameraManager
+			+ offsets::APlayerCameraManager_ViewTargetOffset
+			+ offsets::FCameraCacheEntry_POVOffset;
+		WriteFloat(viewTargetPOV + offsets::FMinimalViewInfo_FOVOffset, targetFOV);
+		WriteFloat(viewTargetPOV + offsets::FMinimalViewInfo_DesiredFOVOffset, targetFOV);
+	}
+
+	const uintptr_t cameraComponent = readPtr(currentPawn + offsets::ADBDPlayer_CameraOffset);
+	if (DRV::IsValidUserAddress(cameraComponent))
+	{
+		WriteFloat(cameraComponent + offsets::UCameraComponent_FieldOfViewOffset, targetFOV);
 	}
 }
 
@@ -149,6 +218,7 @@ inline PVOID BaseThread2()
 		}
 
 		FCameraCacheEntry currentCameraCache = DBD->rpm<FCameraCacheEntry>(cameraManager + offsets::CameraCachePrivate);
+		currentCameraCache.POV.FOV = FOV;
 		actorsArray = readPtr(persistentLevel + offsets::ActorArray);
 		actorsCount = DBD->rpm<int>(persistentLevel + offsets::ActorArray + offsets::ActorCount);
 		if (!DRV::IsValidUserAddress(actorsArray) || actorsCount <= 0 || actorsCount > 20000)
@@ -162,7 +232,7 @@ inline PVOID BaseThread2()
 		{
 			const uintptr_t actorAddress = actorsArray + static_cast<uintptr_t>(i) * sizeof(uintptr_t);
 			if (!DRV::IsValidUserAddress(actorAddress, sizeof(uintptr_t)))
-				break;
+				continue;
 
 			UPlayer player;
 			uintptr_t actor = readPtr(actorAddress);
@@ -173,7 +243,9 @@ inline PVOID BaseThread2()
 			player.objectId = DBD->rpm<int>(actor + offsets::ActorID);
 
 			const std::string actorName = GetNameById(player.objectId);
-			if (actorName.find("BP_CamperMale") != std::string::npos || actorName.find("BP_CamperFemale") != std::string::npos || actorName.find("BP_Slasher") != std::string::npos)
+			const bool isSurvivor = actorName.find("BP_Camper") != std::string::npos;
+			const bool isKiller = actorName.find("BP_Slasher") != std::string::npos;
+			if (isSurvivor || isKiller)
 			{
 				player.PlayerState = readPtr(actor + offsets::PlayerState);
 				player.Pawn = readPtr(actor + offsets::AcknowledgedPawn);
@@ -188,14 +260,10 @@ inline PVOID BaseThread2()
 				if (DistM > distanceMax || player.PlayerState == PlayerStateLocalPlayer)
 					continue;
 
-				if (actorName.find("BP_CamperMale") != std::string::npos)
-					nameS = "MaleSurvivor";
-
-				if (actorName.find("BP_CamperFemale") != std::string::npos)
-					nameS = "FemaleSurvivor";
-
-				if (actorName.find("BP_Slasher") != std::string::npos)
+				if (isKiller)
 					nameS = "Killer";
+				else
+					nameS = "Survivor";
 
 				EntityList Entity{ };
 				Entity.instance = player.instance;
@@ -237,7 +305,7 @@ void RenderESP()
 			auto Entity = EntityList_Copy[i];
 			Vector3 Screen = WorldToScreen(cameraCacheCopy.POV, Entity.origin);
 			Vector3 head = WorldToScreen(cameraCacheCopy.POV, Entity.TopLocation);
-			if ((!mate && Entity.name == "MaleSurvivor") || (!mate && Entity.name == "FemaleSurvivor"))
+			if (!mate && Entity.name != "Killer")
 				continue;
 
 			if (Screen.x && head.x)
