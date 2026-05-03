@@ -3,6 +3,8 @@
 #include "offset.h"
 #include <cmath>
 #include <mutex>
+#include <shared_mutex>
+#include <unordered_map>
 
 struct Matrix4x4
 {
@@ -212,6 +214,16 @@ static std::string GetNameById(uint32_t actor_id)
 	if (actor_id == 0 || process_base == 0)
 		return std::string("NULL");
 
+	static std::unordered_map<uint32_t, std::string> gNameCache;
+	static std::shared_mutex gNameCacheMutex;
+
+	{
+		std::shared_lock<std::shared_mutex> lock(gNameCacheMutex);
+		auto it = gNameCache.find(actor_id);
+		if (it != gNameCache.end())
+			return it->second;
+	}
+
 	char pNameBuffer[256] = {};
 	uint32_t TableLocation = actor_id >> 0x10;
 	uint16_t RowLocation = (unsigned __int16)actor_id;
@@ -239,7 +251,14 @@ static std::string GetNameById(uint32_t actor_id)
 		if (DBD->ReadRaw((TableLocationAddress + 6), pNameBuffer, static_cast<size_t>(sLength)))
 		{
 			pNameBuffer[sLength] = '\0';
-			return std::string(pNameBuffer);
+			std::string result(pNameBuffer);
+			{
+				std::unique_lock<std::shared_mutex> lock(gNameCacheMutex);
+				if (gNameCache.size() > 200000)
+					gNameCache.clear();
+				gNameCache.emplace(actor_id, result);
+			}
+			return result;
 		}
 	}
 	return std::string("NULL");

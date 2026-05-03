@@ -2,6 +2,7 @@
 #include "util.h"
 #include "offset.h"
 #include <cmath>
+#include <unordered_set>
 // ###################################################### Some useful stuff (I was lazy) ###################################################### \\
 
 
@@ -228,55 +229,93 @@ inline PVOID BaseThread2()
 			continue;
 		}
 
+		// Track seen actor pointers during this scan to prevent duplicates/ghosts.
+		std::unordered_set<uintptr_t> seenInstances;
+		seenInstances.reserve(static_cast<size_t>(actorsCount));
+
 		for (int i = 0; i < actorsCount; i++)
 		{
 			const uintptr_t actorAddress = actorsArray + static_cast<uintptr_t>(i) * sizeof(uintptr_t);
 			if (!DRV::IsValidUserAddress(actorAddress, sizeof(uintptr_t)))
 				continue;
 
-			UPlayer player;
+			UPlayer player{ };
 			uintptr_t actor = readPtr(actorAddress);
 			if (!DRV::IsValidUserAddress(actor))
 				continue;
 
 			player.instance = actor;
-			player.objectId = DBD->rpm<int>(actor + offsets::ActorID);
 
+			// Read position first to cheaply cull by distance before name lookup (big perf win).
+			player.root_component = readPtr(player.instance + offsets::RootComponent);
+			if (!DRV::IsValidUserAddress(player.root_component + offsets::RelativeLocation, sizeof(Vector3)))
+				continue;
+
+			player.origin = DBD->rpm<Vector3>(player.root_component + offsets::RelativeLocation);
+			// Basic sanity filter to avoid "ghost" entities (stale/recycled pointers often give 0/NaN/insane coords).
+			if (!std::isfinite(player.origin.x) || !std::isfinite(player.origin.y) || !std::isfinite(player.origin.z))
+				continue;
+			if (player.origin.x == 0.0 && player.origin.y == 0.0 && player.origin.z == 0.0)
+				continue;
+
+			float DistM = ToMeters(currentCameraCache.POV.Location.DistTo(player.origin)) - 6;
+			if (DistM > distanceMax)
+				continue;
+
+			player.objectId = DBD->rpm<int>(actor + offsets::ActorID);
 			const std::string actorName = GetNameById(player.objectId);
+			if (actorName == "NULL")
+				continue;
+			// Filter out blueprint defaults / skeleton / reinstanced objects that can appear in actor arrays.
+			if (actorName.rfind("Default__", 0) == 0 || actorName.rfind("SKEL_", 0) == 0 || actorName.rfind("REINST_", 0) == 0)
+				continue;
+
 			const bool isSurvivor = actorName.find("BP_Camper") != std::string::npos;
 			const bool isKiller = actorName.find("BP_Slasher") != std::string::npos;
-			if (isSurvivor || isKiller)
+			const bool isGenerator = actorName.find("Generator") != std::string::npos;
+			if (!isSurvivor && !isKiller && !isGenerator)
+				continue;
+
+			if (seenInstances.contains(player.instance))
+				continue;
+			seenInstances.insert(player.instance);
+
+			uintptr_t generatorChargeable = 0;
+			if (isGenerator)
+			{
+				generatorChargeable = readPtr(actor + offsets::AGenerator_GeneratorChargeable);
+				if (!DRV::IsValidUserAddress(generatorChargeable))
+					continue;
+				nameS = "Generator";
+				player.TopLocation = Vector3{ player.origin.x, player.origin.y, player.origin.z + 90 };
+			}
+			else
 			{
 				player.PlayerState = readPtr(actor + offsets::PlayerState);
-				player.Pawn = readPtr(actor + offsets::AcknowledgedPawn);
-				player.root_component = readPtr(player.instance + offsets::RootComponent);
-				if (!DRV::IsValidUserAddress(player.root_component + offsets::RelativeLocation, sizeof(Vector3)))
+				// Player actors should always have a valid PlayerState. Invalid here tends to be a stale actor => ghost.
+				if (!DRV::IsValidUserAddress(player.PlayerState))
+					continue;
+				player.Pawn = 0;
+				if (player.PlayerState == PlayerStateLocalPlayer)
 					continue;
 
-				player.origin = DBD->rpm<Vector3>(player.root_component + offsets::RelativeLocation);
+				nameS = isKiller ? "Killer" : "Survivor";
 				player.TopLocation = Vector3{ player.origin.x, player.origin.y, player.origin.z + 125 };
-				float DistM = ToMeters(currentCameraCache.POV.Location.DistTo(player.origin)) - 6;
-
-				if (DistM > distanceMax || player.PlayerState == PlayerStateLocalPlayer)
-					continue;
-
-				if (isKiller)
-					nameS = "Killer";
-				else
-					nameS = "Survivor";
-
-				EntityList Entity{ };
-				Entity.instance = player.instance;
-				Entity.objectId = player.objectId;
-				Entity.PlayerState = player.PlayerState;
-				Entity.health = player.health;
-				Entity.root_component = player.root_component;
-				Entity.origin = player.origin;
-				Entity.TopLocation = player.TopLocation;
-				Entity.dist = DistM;
-				Entity.name = nameS;
-				tmpList.push_back(Entity);
 			}
+
+			EntityList Entity{ };
+			Entity.instance = player.instance;
+			Entity.instigator = generatorChargeable;
+			Entity.objectId = player.objectId;
+			Entity.PlayerState = player.PlayerState;
+			Entity.Pawn = player.Pawn;
+			Entity.health = player.health;
+			Entity.root_component = player.root_component;
+			Entity.origin = player.origin;
+			Entity.TopLocation = player.TopLocation;
+			Entity.dist = DistM;
+			Entity.name = nameS;
+			tmpList.push_back(Entity);
 		}
 
 		{
@@ -285,7 +324,7 @@ inline PVOID BaseThread2()
 			entityList = tmpList;
 		}
 
-		Sleep(5);
+		Sleep(15);
 	}
 }
 
@@ -305,7 +344,7 @@ void RenderESP()
 			auto Entity = EntityList_Copy[i];
 			Vector3 Screen = WorldToScreen(cameraCacheCopy.POV, Entity.origin);
 			Vector3 head = WorldToScreen(cameraCacheCopy.POV, Entity.TopLocation);
-			if (!mate && Entity.name != "Killer")
+			if (!mate && Entity.name == "Survivor")
 				continue;
 
 			if (Screen.x && head.x)
@@ -320,6 +359,8 @@ void RenderESP()
 				{
 					if(Entity.name == "Killer")
 						g_overlay->draw_text(screenX - 50.0f, screenY + 50.0f, D2D1::ColorF(255, 0, 0, 255), Entity.name.c_str());
+					else if (Entity.name == "Generator")
+						g_overlay->draw_text(screenX - 50.0f, screenY + 50.0f, D2D1::ColorF(255, 220, 0, 255), Entity.name.c_str());
 					else
 						g_overlay->draw_text(screenX - 50.0f, screenY + 50.0f, D2D1::ColorF(0, 255, 0, 255), Entity.name.c_str());
 				}

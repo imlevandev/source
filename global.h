@@ -21,7 +21,7 @@ float ScreenCenterX;
 float ScreenCenterY;
 
 float FOV = 90;
-float distanceMax = 250;
+float distanceMax = 1200;
 
 uint64_t process_base = 0;
 uint32_t process_id = 0;
